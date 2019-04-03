@@ -2,9 +2,35 @@
 # 
 from flask import Flask, render_template, request, json
 import datetime
+import os
+import time
+import threading
+import queue
 
 dataFile = 'data/units.json'
 app = Flask(__name__)
+unitStatus = []
+q = queue.LifoQueue()
+
+
+def ping(hostname):
+    response = os.system("ping -c1 -w1 " + hostname)
+    return response == 0
+
+def statusUpdate(dataQueue):
+    while True:
+        newStatus = []
+        with open(dataFile, "r") as json_file:  
+            unitData = json.load(json_file)
+            for unit in unitData:
+                status = {}
+                status["unitName"] = unit["unitName"]
+                status["unitOnline"] = ping(unit["unitName"])
+                newStatus.append(status)
+        with dataQueue.mutex:
+            dataQueue.queue.clear()
+        dataQueue.put(newStatus)
+        time.sleep(30)
 
 @app.route("/")
 def main():
@@ -29,8 +55,17 @@ def addUnit():
 
 @app.route('/getUnits')
 def getUnits():
+    global unitStatus
+    if not q.empty():
+        unitStatus = q.get()
     with open(dataFile) as json_file:  
         unitData = json.load(json_file)
+        for unit in unitData:
+            for status in unitStatus:
+                print(status["unitName"])
+                if status["unitName"] == unit["unitName"]:
+                    unit.update(status)
+                    break
         return json.dumps(unitData)
     print("Failed to read unit data")
     return "[]"
@@ -77,4 +112,7 @@ def claimUnit():
     return json.dumps({'status':'Failure'})
 
 if __name__ == "__main__":
+    updateThread = threading.Thread(name='updateThread', target=statusUpdate, args=(q,))
+    updateThread.setDaemon(True)
+    updateThread.start()
     app.run()

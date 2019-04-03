@@ -124,8 +124,14 @@
         <script src="static/js/editUnits.js"></script>
 
         <script id="listTemplate" type="text/x-jQuery-tmpl">
+            {% raw %}
             <li class="list-group-item">
                 <div class="row">
+                    <div class="col-md-1">
+                        {{if unitOnline}}
+                        <span class="glyphicon glyphicon-ok-circle gi-2x text-success"></span>
+                        {{/if}}
+                    </div>
                     <div class="col-md-3">
                         <label>
                             ${unitName}
@@ -137,7 +143,7 @@
                     <div class="col-md-3">
                         <em>${unitTime}</em>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class= "pull-right action-buttons">
                             <a data-id=${id} onclick="claimUnitConfirm(this)"><span class="glyphicon glyphicon-ok gi-2x"</span></a>
                             <a data-id=${id} onclick="releaseUnitConfirm(this)"><span class="glyphicon glyphicon-remove gi-2x"</span></a>
@@ -148,6 +154,7 @@
                 </div>
 
             </li>
+            {% endraw %}
          </script>
 
 </body>
