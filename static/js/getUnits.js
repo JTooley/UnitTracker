@@ -16,4 +16,5 @@ function updateUnits() {
             console.log(error);
         }
     });
+    setTimeout(updateUnits, 5000);
 }

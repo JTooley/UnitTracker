@@ -62,11 +62,10 @@ def getUnits():
         unitData = json.load(json_file)
         for unit in unitData:
             for status in unitStatus:
-                print(status["unitName"])
                 if status["unitName"] == unit["unitName"]:
                     unit.update(status)
                     break
-        return json.dumps(unitData)
+        return json.dumps(sorted(unitData, key=lambda x: x["unitName"]))
     print("Failed to read unit data")
     return "[]"
 
